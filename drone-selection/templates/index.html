@@ -118,8 +118,15 @@
             if (sensor) criteria["sensor_support"] = sensor;
             const maintenance = document.getElementById('maintenance').value;
             if (maintenance) criteria["regular_maintenance_complexity"] = maintenance;
-            const transmission = document.getElementById('transmission').value;
-            if (transmission) criteria["transmission_capability"] = transmission;
+            const transmissionYes = document.getElementById('transmission_yes').value;
+            const transmissionType = document.getElementById('transmission_type').value;
+            if (transmissionYes && transmissionType) {
+                criteria["transmission_capability"] = transmissionYes + "/" + transmissionType;
+            } else if (transmissionYes) {
+                criteria["transmission_capability"] = transmissionYes;
+            } else if (transmissionType) {
+                criteria["transmission_capability"] = transmissionType;
+            }
             const compliance = document.getElementById('compliance').value;
             if (compliance) criteria["compliance"] = compliance;
 
@@ -241,7 +248,18 @@
             <input type="text" id="maintenance" placeholder="e.g. Medium">
 
             <label>Real-time Image/Data Transmission & Local/Cloud Analysis Capability:</label>
-            <input type="text" id="transmission" placeholder="e.g. Yes/Cloud">
+            <div class="range-group">
+                <select id="transmission_yes">
+                    <option value="">Any</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+                <select id="transmission_type">
+                    <option value="">Any</option>
+                    <option value="Cloud">Cloud</option>
+                    <option value="Local">Local</option>
+                </select>
+            </div>
 
             <label>Compliance with Local Flight Regulations:</label>
             <input type="text" id="compliance" placeholder="e.g. EU">
