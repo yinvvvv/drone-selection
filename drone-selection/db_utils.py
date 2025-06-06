@@ -1,4 +1,4 @@
-def load_data(file_path):
+def get_drones(file_path):
     """
     Load the drone dataset from the CSV file.
     """
