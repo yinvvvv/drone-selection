@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无人机选择</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">无人机选择</h1>
+        <form id="drone-selection-form" class="mt-4">
+            <div class="form-group">
+                <label for="payload">载荷 (kg)</label>
+                <input type="number" class="form-control" id="payload" required>
+            </div>
+            <div class="form-group">
+                <label for="range">范围 (km)</label>
+                <input type="number" class="form-control" id="range" required>
+            </div>
+            <div class="form-group">
+                <label for="endurance">耐力 (分钟)</label>
+                <input type="number" class="form-control" id="endurance" required>
+            </div>
+            <button type="submit" class="btn btn-primary">选择无人机</button>
+        </form>
+        <div id="result" class="mt-4"></div>
+    </div>
+
+    <script>
+        document.getElementById('drone-selection-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const payload = document.getElementById('payload').value;
+            const range = document.getElementById('range').value;
+            const endurance = document.getElementById('endurance').value;
+
+            fetch('/select', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ payload, range, endurance })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                if (data.success) {
+                    resultDiv.innerHTML = `<h3>选择的无人机: ${data.drone.name}</h3>`;
+                } else {
+                    resultDiv.innerHTML = `<h3>${data.message}</h3>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
