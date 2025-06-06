@@ -11,7 +11,7 @@ def index():
 @app.route('/select', methods=['POST'])
 def select():
     criteria = request.json  # Get filter criteria from frontend
-    drones = get_drones()    # Read all drone data
+    drones = get_drones('drone_original.csv')    # Read all drone data
     filtered = filter_drones(drones, criteria)  # Filter drones
     return jsonify({"success": True, "drones": filtered})
 
