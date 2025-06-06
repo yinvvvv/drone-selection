@@ -1,56 +1,254 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>无人机选择</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container">
-        <h1 class="mt-5">无人机选择</h1>
-        <form id="drone-selection-form" class="mt-4">
-            <div class="form-group">
-                <label for="payload">载荷 (kg)</label>
-                <input type="number" class="form-control" id="payload" required>
-            </div>
-            <div class="form-group">
-                <label for="range">范围 (km)</label>
-                <input type="number" class="form-control" id="range" required>
-            </div>
-            <div class="form-group">
-                <label for="endurance">耐力 (分钟)</label>
-                <input type="number" class="form-control" id="endurance" required>
-            </div>
-            <button type="submit" class="btn btn-primary">选择无人机</button>
-        </form>
-        <div id="result" class="mt-4"></div>
-    </div>
-
+    <title>Port Drone Selection DSS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background: linear-gradient(120deg, #e0f7fa 0%, #b2ebf2 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 36px 24px 36px;
+        }
+        h2 {
+            text-align: center;
+            color: #0077b6;
+            margin-bottom: 24px;
+        }
+        form label {
+            display: block;
+            margin-bottom: 4px;
+            color: #01579b;
+            font-weight: 500;
+        }
+        form input, form select {
+            width: 100%;
+            padding: 7px 10px;
+            margin-bottom: 16px;
+            border: 1px solid #b3c6ce;
+            border-radius: 5px;
+            font-size: 15px;
+            background: #f7fbfc;
+            transition: border-color 0.2s;
+        }
+        form input:focus, form select:focus {
+            border-color: #0077b6;
+            outline: none;
+        }
+        .range-group {
+            display: flex;
+            gap: 8px;
+        }
+        .range-group input {
+            flex: 1;
+        }
+        button {
+            width: 100%;
+            background: #0077b6;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #005f87;
+        }
+        #result {
+            margin-top: 32px;
+        }
+        .drone-card {
+            background: #f1f8fb;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,119,182,0.06);
+            padding: 18px 20px;
+            margin-bottom: 18px;
+        }
+        .drone-card strong {
+            color: #0077b6;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 16px 6px; }
+        }
+    </style>
     <script>
-        document.getElementById('drone-selection-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const payload = document.getElementById('payload').value;
-            const range = document.getElementById('range').value;
-            const endurance = document.getElementById('endurance').value;
+        function submitCriteria() {
+            const criteria = {};
+
+            function addRange(field, minId, maxId) {
+                const min = document.getElementById(minId).value;
+                const max = document.getElementById(maxId).value;
+                if (min || max) {
+                    criteria[field] = {};
+                    if (min) criteria[field]["min"] = parseFloat(min);
+                    if (max) criteria[field]["max"] = parseFloat(max);
+                }
+            }
+            addRange("max_flight_radius", "min_radius", "max_radius");
+            addRange("max_flight_altitude", "min_altitude", "max_altitude");
+            addRange("max_flight_duration", "min_duration", "max_duration");
+            addRange("daily_flight_frequency", "min_frequency", "max_frequency");
+            addRange("max_wind_resistance", "min_wind", "max_wind");
+            addRange("noise_levels", "min_noise", "max_noise");
+            addRange("drone_cost", "min_cost", "max_cost");
+            addRange("startup_time", "min_startup", "max_startup");
+
+            const night = document.getElementById('night_flight').value;
+            if (night) criteria["night_flight_support"] = night;
+            const auto_nav = document.getElementById('auto_nav').value;
+            if (auto_nav) criteria["auto_nav_obstacle_avoid"] = auto_nav;
+            const ip_rating = document.getElementById('ip_rating').value;
+            if (ip_rating) criteria["ip_rating"] = ip_rating;
+            const mission = document.getElementById('supported_mission').value;
+            if (mission) criteria["supported_mission_types"] = mission;
+            const sensor = document.getElementById('sensor_support').value;
+            if (sensor) criteria["sensor_support"] = sensor;
+            const maintenance = document.getElementById('maintenance').value;
+            if (maintenance) criteria["regular_maintenance_complexity"] = maintenance;
+            const transmission = document.getElementById('transmission').value;
+            if (transmission) criteria["transmission_capability"] = transmission;
+            const compliance = document.getElementById('compliance').value;
+            if (compliance) criteria["compliance"] = compliance;
 
             fetch('/select', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ payload, range, endurance })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(criteria)
             })
             .then(response => response.json())
             .then(data => {
                 const resultDiv = document.getElementById('result');
-                if (data.success) {
-                    resultDiv.innerHTML = `<h3>选择的无人机: ${data.drone.name}</h3>`;
+                if (data.success && data.drones.length > 0) {
+                    let html = '<h3>Results:</h3>';
+                    data.drones.forEach(drone => {
+                        html += `<div class="drone-card">
+                            <strong>${drone.name}</strong><br>
+                            Max Flight Radius: ${drone.max_flight_radius} km<br>
+                            Max Altitude: ${drone.max_flight_altitude} m<br>
+                            Max Duration: ${drone.max_flight_duration} min<br>
+                            Daily Frequency: ${drone.daily_flight_frequency}<br>
+                            Night Flight: ${drone.night_flight_support}<br>
+                            Auto Navigation/Obstacle Avoid: ${drone.auto_nav_obstacle_avoid}<br>
+                            Max Wind Resistance: ${drone.max_wind_resistance} mph<br>
+                            IP Rating: ${drone.ip_rating}<br>
+                            Supported Missions: ${drone.supported_mission_types}<br>
+                            Noise Level: ${drone.noise_levels} dB<br>
+                            Cost: ${drone.drone_cost} K EUR<br>
+                            Sensor Support: ${drone.sensor_support}<br>
+                            Startup Time: ${drone.startup_time} min<br>
+                            Maintenance: ${drone.regular_maintenance_complexity}<br>
+                            Transmission: ${drone.transmission_capability}<br>
+                            Compliance: ${drone.compliance}
+                        </div>`;
+                    });
+                    resultDiv.innerHTML = html;
                 } else {
-                    resultDiv.innerHTML = `<h3>${data.message}</h3>`;
+                    resultDiv.innerHTML = '<p>No matching drones found.</p>';
                 }
             });
-        });
+        }
     </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Port Drone Selection DSS</h2>
+        <form onsubmit="event.preventDefault();submitCriteria();">
+            <label>Maximum Flight Radius (km):</label>
+            <div class="range-group">
+                <input type="number" id="min_radius" placeholder="Min">
+                <input type="number" id="max_radius" placeholder="Max">
+            </div>
+
+            <label>Maximum Flight Altitude (m):</label>
+            <div class="range-group">
+                <input type="number" id="min_altitude" placeholder="Min">
+                <input type="number" id="max_altitude" placeholder="Max">
+            </div>
+
+            <label>Maximum Flight Duration (min):</label>
+            <div class="range-group">
+                <input type="number" id="min_duration" placeholder="Min">
+                <input type="number" id="max_duration" placeholder="Max">
+            </div>
+
+            <label>Daily Flight Frequency (times):</label>
+            <div class="range-group">
+                <input type="number" id="min_frequency" placeholder="Min">
+                <input type="number" id="max_frequency" placeholder="Max">
+            </div>
+
+            <label>Night Flight Support:</label>
+            <select id="night_flight">
+                <option value="">Any</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+
+            <label>Automatic Navigation & Obstacle Avoidance:</label>
+            <select id="auto_nav">
+                <option value="">Any</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+
+            <label>Maximum Wind Resistance (mph):</label>
+            <div class="range-group">
+                <input type="number" id="min_wind" placeholder="Min">
+                <input type="number" id="max_wind" placeholder="Max">
+            </div>
+
+            <label>Water Resistance Rating (IP Rating):</label>
+            <input type="text" id="ip_rating" placeholder="e.g. IP54">
+
+            <label>Supported Mission Types:</label>
+            <input type="text" id="supported_mission" placeholder="e.g. Monitoring">
+
+            <label>Noise Levels (dB):</label>
+            <div class="range-group">
+                <input type="number" id="min_noise" placeholder="Min">
+                <input type="number" id="max_noise" placeholder="Max">
+            </div>
+
+            <label>Drone Cost (K EUR):</label>
+            <div class="range-group">
+                <input type="number" id="min_cost" placeholder="Min">
+                <input type="number" id="max_cost" placeholder="Max">
+            </div>
+
+            <label>Sensor Support (e.g., Thermal Imaging):</label>
+            <input type="text" id="sensor_support" placeholder="e.g. Thermal">
+
+            <label>Startup & Deployment Time (min):</label>
+            <div class="range-group">
+                <input type="number" id="min_startup" placeholder="Min">
+                <input type="number" id="max_startup" placeholder="Max">
+            </div>
+
+            <label>Regular Maintenance Complexity:</label>
+            <input type="text" id="maintenance" placeholder="e.g. Medium">
+
+            <label>Real-time Image/Data Transmission & Local/Cloud Analysis Capability:</label>
+            <input type="text" id="transmission" placeholder="e.g. Yes/Cloud">
+
+            <label>Compliance with Local Flight Regulations:</label>
+            <input type="text" id="compliance" placeholder="e.g. EU">
+
+            <button type="submit">Filter</button>
+        </form>
+        <div id="result"></div>
+    </div>
 </body>
 </html>
