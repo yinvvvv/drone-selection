@@ -97,14 +97,7 @@
                     if (max) criteria[field]["max"] = parseFloat(max);
                 }
             }
-            addRange("max_flight_radius", "min_radius", "max_radius");
-            addRange("max_flight_altitude", "min_altitude", "max_altitude");
-            addRange("max_flight_duration", "min_duration", "max_duration");
-            addRange("daily_flight_frequency", "min_frequency", "max_frequency");
-            addRange("max_wind_resistance", "min_wind", "max_wind");
-            addRange("noise_levels", "min_noise", "max_noise");
             addRange("drone_cost", "min_cost", "max_cost");
-            addRange("startup_time", "min_startup", "max_startup");
 
             const night = document.getElementById('night_flight').value;
             if (night) criteria["night_flight_support"] = night;
@@ -165,6 +158,7 @@
                 } else {
                     resultDiv.innerHTML = '<p>No matching drones found.</p>';
                 }
+                console.log(data.drones);
             });
         }
     </script>
@@ -174,28 +168,18 @@
         <h2>Port Drone Selection DSS</h2>
         <form onsubmit="event.preventDefault();submitCriteria();">
             <label>Maximum Flight Radius (km):</label>
-            <div class="range-group">
-                <input type="number" id="min_radius" placeholder="Min">
                 <input type="number" id="max_radius" placeholder="Max">
-            </div>
+                
 
             <label>Maximum Flight Altitude (m):</label>
-            <div class="range-group">
-                <input type="number" id="min_altitude" placeholder="Min">
                 <input type="number" id="max_altitude" placeholder="Max">
-            </div>
+           
 
             <label>Maximum Flight Duration (min):</label>
-            <div class="range-group">
-                <input type="number" id="min_duration" placeholder="Min">
                 <input type="number" id="max_duration" placeholder="Max">
-            </div>
 
             <label>Daily Flight Frequency (times):</label>
-            <div class="range-group">
-                <input type="number" id="min_frequency" placeholder="Min">
-                <input type="number" id="max_frequency" placeholder="Max">
-            </div>
+            <input type="number" id="max_frequency" placeholder="Enter value">
 
             <label>Night Flight Support:</label>
             <select id="night_flight">
@@ -224,10 +208,7 @@
             <input type="text" id="supported_mission" placeholder="e.g. Monitoring">
 
             <label>Noise Levels (dB):</label>
-            <div class="range-group">
-                <input type="number" id="min_noise" placeholder="Min">
-                <input type="number" id="max_noise" placeholder="Max">
-            </div>
+            <input type="number" id="max_noise" placeholder="Enter value">
 
             <label>Drone Cost (K EUR):</label>
             <div class="range-group">
