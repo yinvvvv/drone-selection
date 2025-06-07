@@ -23,9 +23,9 @@ def rank():
     drones = data["drones"]
     weights = data["weights"]
 
-    wsm_result = calculate_wsm(drones, weights)
-    ahp_result = calculate_ahp(weights, drones)
-    topsis_result = calculate_topsis(drones, weights)
+    wsm_result = wsm(drones, weights)
+    ahp_result = ahp(weights, drones)
+    topsis_result = topsis(drones, weights)
 
     return jsonify({"success": True, "wsm": wsm_result, "ahp": ahp_result, "topsis": topsis_result})
 
