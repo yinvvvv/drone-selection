@@ -86,7 +86,7 @@
             let weightsHtml = "";
             if (drones.length > 0) {
                 for (let key in drones[0]) {
-                    if (key !== "name") {
+                    if (key !== "name"&& key !== "compliance") {
                         starRatings[key] = 3; // 默认3星
                         weightsHtml += `
                         <div class="weight-row">
