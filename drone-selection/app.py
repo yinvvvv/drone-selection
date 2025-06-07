@@ -13,7 +13,7 @@ def index():
 @app.route('/select', methods=['POST'])
 def select():
     criteria = request.json  # Get filter criteria from frontend
-    drones = get_drones(r"C:\Users\lenovo\Desktop\drone-selection-main\drone-selection\drone _original.csv")    # Read all drone data
+    drones = get_drones(r'C:\Users\wangh\Desktop\drone\drone-selection\drone-selection\drone _original.csv')    # Read all drone data
     filtered = filter_drones(drones, criteria)  # Filter drones
     return jsonify({"success": True, "drones": filtered})
 
@@ -22,12 +22,9 @@ def rank():
     data = request.json
     drones = data["drones"]
     weights = data["weights"]
-
-    wsm_result = calculate_wsm(drones, weights)
     ahp_result = calculate_ahp(weights, drones)
-    topsis_result = calculate_topsis(drones, weights)
 
-    return jsonify({"success": True, "wsm": wsm_result, "ahp": ahp_result, "topsis": topsis_result})
+    return jsonify({"success": True, "ahp": ahp_result})
 
 if __name__ == '__main__':
     app.run(debug=True)
