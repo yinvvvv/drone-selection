@@ -116,7 +116,6 @@
         }
 
         function submitWeights() {
-            // 直接将星级对象传给后端
             fetch('/rank', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -124,8 +123,9 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("result").innerHTML = 
-                    `<strong>Ranking Result:</strong><br><pre>${JSON.stringify(data.ahp, null, 2)}</pre>`;
+                let weightsHtml = "<strong>归一化权重：</strong><br><pre>" + JSON.stringify(data.weights, null, 2) + "</pre>";
+                let resultHtml = `<strong>Ranking Result:</strong><br><pre>${JSON.stringify(data.ahp, null, 2)}</pre>`;
+                document.getElementById("result").innerHTML = weightsHtml + resultHtml;
             });
         }
     </script>

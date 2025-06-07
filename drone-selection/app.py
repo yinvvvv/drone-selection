@@ -29,7 +29,7 @@ def rank():
     else:
         weights = data["weights"]
     ahp_result = calculate_ahp(weights, drones)
-    return jsonify({"success": True, "ahp": ahp_result})
+    return jsonify({"success": True, "ahp": ahp_result, "weights": weights})
 
 if __name__ == '__main__':
     app.run(debug=True)

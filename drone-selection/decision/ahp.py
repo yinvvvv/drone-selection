@@ -7,5 +7,5 @@ def calculate_ahp(weights, drones):
     :return: list，带有AHP分数的无人机列表
     """
 
-    return results
+    return []
 
