@@ -23,7 +23,6 @@ def rank():
     drones = data["drones"]
     weights = data["weights"]
 
-    # 调用三种模型计算排名
     wsm_result = calculate_wsm(drones, weights)
     ahp_result = calculate_ahp(weights, drones)
     topsis_result = calculate_topsis(drones, weights)
