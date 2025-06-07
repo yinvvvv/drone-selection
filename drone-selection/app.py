@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from db_utils import get_drones
 from decision.filiter import filter_drones
 from decision.ahp import calculate_ahp
+from decision.feature_quantification import quantify_features
 app = Flask(__name__)
 
 @app.route('/')
@@ -28,7 +29,7 @@ def rank():
         weights = {k: (v / total if total > 0 else 0) for k, v in stars.items()}
     else:
         weights = data["weights"]
-    ahp_result = calculate_ahp(weights, drones)
+    ahp_result = calculate_ahp(weights, quantify_features(drones))
     return jsonify({"success": True, "ahp": ahp_result, "weights": weights})
 
 if __name__ == '__main__':
