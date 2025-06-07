@@ -1,14 +1,15 @@
 from flask import Flask, render_template, request, jsonify
 from db_utils import get_drones
 from decision.filiter import filter_drones
-from decision.wsm import calculate_wsm
 from decision.ahp import calculate_ahp
-from decision.topsis import calculate_topsis
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+@app.route('/weights')
+def weights():
+    return render_template('weights.html')
 
 @app.route('/select', methods=['POST'])
 def select():
@@ -21,9 +22,13 @@ def select():
 def rank():
     data = request.json
     drones = data["drones"]
-    weights = data["weights"]
+    if "stars" in data:
+        stars = data["stars"]
+        total = sum(stars.values())
+        weights = {k: (v / total if total > 0 else 0) for k, v in stars.items()}
+    else:
+        weights = data["weights"]
     ahp_result = calculate_ahp(weights, drones)
-
     return jsonify({"success": True, "ahp": ahp_result})
 
 if __name__ == '__main__':

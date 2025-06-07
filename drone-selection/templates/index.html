@@ -84,6 +84,8 @@
             .container { padding: 16px 6px; }
         }
     </style>
+</head>
+<body>
     <script>
         let drones = [];
 
@@ -100,19 +102,33 @@
                 }
             }
             addRange("drone_cost", "min_cost", "max_cost");
+            function addMin(field, minId) {
+                const min = document.getElementById(minId).value;
+                if (min) {
+                    criteria[field] = { min: parseFloat(min) };
+                }
+            }
+
+            addMin("max_flight_radius", "max_radius");
+            addMin("max_flight_altitude", "max_altitude");
+            addMin("max_flight_duration", "max_duration");
+            addMin("max_wind_resistance", "min_wind");
+            addMin("noise_levels", "max_noise");
+            addMin("startup_time", "min_startup");
+            addMin("daily_flight_frequency", "max_frequency");
+            addMin("ip_rating", "ip_rating");
 
             const night = document.getElementById('night_flight').value;
             if (night) criteria["night_flight_support"] = night;
             const auto_nav = document.getElementById('auto_nav').value;
             if (auto_nav) criteria["auto_nav_obstacle_avoid"] = auto_nav;
-            const ip_rating = document.getElementById('ip_rating').value;
-            if (ip_rating) criteria["ip_rating"] = ip_rating;
             const mission = document.getElementById('supported_mission').value;
             if (mission) criteria["supported_mission_types"] = mission;
             const sensor = document.getElementById('sensor_support').value;
             if (sensor) criteria["sensor_support"] = sensor;
             const maintenance = document.getElementById('maintenance').value;
             if (maintenance) criteria["regular_maintenance_complexity"] = maintenance;
+
             const transmissionYes = document.getElementById('transmission_yes').value;
             const transmissionType = document.getElementById('transmission_type').value;
             if (transmissionYes && transmissionType) {
@@ -122,6 +138,7 @@
             } else if (transmissionType) {
                 criteria["transmission_capability"] = transmissionType;
             }
+
             const compliance = document.getElementById('compliance').value;
             if (compliance) criteria["compliance"] = compliance;
 
@@ -159,49 +176,25 @@
                     });
                     resultDiv.innerHTML = html;
 
-                    // 显示权重输入部分
-                    document.getElementById("weights-section").style.display = "block";
-                    let weightsHtml = "";
-                    for (let key in drones[0]) {
-                        if (key !== "name") {
-                            weightsHtml += `<label>${key}:</label><input type="number" id="weight-${key}" min="0" max="1" step="0.1"><br>`;
-                        }
-                    }
-                    document.getElementById("weights").innerHTML = weightsHtml;
+                    // Show weights input section
+                    document.getElementById("weights-section").style.display = "none";
+                    // 把筛选结果存到 localStorage，并新开权重输入页面
+                    localStorage.setItem('filteredDrones', JSON.stringify(drones));
+                    window.open('/weights', '_blank');
                 } else {
                     resultDiv.innerHTML = '<p>No matching drones found.</p>';
+                    document.getElementById("weights-section").style.display = "none";
                 }
             });
         }
-
+        // Placeholder for calculateRank and showResults functions
         function calculateRank() {
-            const weights = {};
-            drones.forEach(drone => {
-                for (let key in drone) {
-                    const weightInput = document.getElementById(`weight-${key}`);
-                    if (weightInput) weights[key] = parseFloat(weightInput.value) || 0;
-                }
-            });
-
-            fetch('/rank', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({drones, weights})
-            })
-            .then(response => response.json())
-            .then(data => {
-                window.rankingResults = data;
-                document.getElementById("rank-results").style.display = "block";
-            });
+            // Implement ranking logic here
+            document.getElementById("rank-results").style.display = "block";
+            document.getElementById("rank-output").innerHTML = "<p>Ranking results will be shown here.</p>";
         }
-
-        function showResults(model) {
-            const results = window.rankingResults[model];
-            let html = `<h3>${model.toUpperCase()} Results:</h3>`;
-            results.forEach((res, index) => {
-                html += `<p>${index + 1}. ${res.name} - Score: ${res.score.toFixed(2)}</p>`;
-            });
-            document.getElementById("rank-output").innerHTML = html;
+        function showResults(method) {
+            document.getElementById("rank-output").innerHTML = `<p>Showing ${method.toUpperCase()} results (not implemented).</p>`;
         }
     </script>
 </head>
@@ -304,3 +297,4 @@
     </div>
 </body>
 </html>
+       

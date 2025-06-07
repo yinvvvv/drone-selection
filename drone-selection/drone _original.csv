@@ -6,7 +6,7 @@ Daily Flight Frequency,10,15,5,4,6,3,18,10,12,16
 Night Flight Support,Yes,No,Yes,No,Yes,No,Yes,Yes,Yes,Yes
 auto_nav_obstacle_avoid,Yes,Yes,No,No,Yes,No,Yes,No,Yes,Yes
 max_wind_resistance,20,30,10,10,22,8,30,15,20,30
-ip_rating,IP54,IP67,IP44,IP54,IP66,IP53,IP68,IP65,IP67,IP68
+ip_rating,54,67,44,54,66,53,68,65,67,68
 supported_mission_types,"Monitorting, Inspection","Monitoring, Storage, Ship","Fence, Monitoring",Fence,Storage，monitoring,Fence,All,Env/Ship,Monitoring,All
 Noise Levels,65,60,70,72,65,70,55,63,65,58
 Drone Cost,"10,000","15,000","9,950",6100,13999,8888,15280,11000,15000,20000
