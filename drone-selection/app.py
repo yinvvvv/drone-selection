@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from db_utils import get_drones
 from decision.filiter import filter_drones
-from decision.wsm import calculate_wsm
-from decision.ahp import calculate_ahp
-from decision.topsis import calculate_topsis
+from decision.wsm import wsm
+from decision.ahp import ahp
+from decision.topsis import topsis
 app = Flask(__name__)
 
 @app.route('/')
