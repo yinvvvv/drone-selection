@@ -3,6 +3,7 @@ from db_utils import get_drones
 from decision.filiter import filter_drones
 from decision.ahp import calculate_ahp
 from decision.feature_quantification import quantify_features
+import os
 app = Flask(__name__)
 
 @app.route('/')
@@ -15,7 +16,8 @@ def weights():
 @app.route('/select', methods=['POST'])
 def select():
     criteria = request.json  # Get filter criteria from frontend
-    drones = get_drones(r'C:\Users\wangh\Desktop\drone\drone-selection\drone-selection\drone _original.csv')    # Read all drone data
+    csv_path = os.path.join(os.path.dirname(__file__), 'drone_original.csv')
+    drones = get_drones(csv_path)    # Read all drone data
     filtered = filter_drones(drones, criteria)  # Filter drones
     return jsonify({"success": True, "drones": filtered})
 
