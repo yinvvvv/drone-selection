@@ -47,12 +47,6 @@
         .star.selected {
             color: #ffb400;
         }
-        .tip {
-            font-size: 0.95rem;
-            color: #888;
-            margin-bottom: 18px;
-            text-align: center;
-        }
         .btn-submit {
             width: 100%;
             background: #0077b6;
@@ -68,14 +62,54 @@
         .btn-submit:hover {
             background: #023e8a;
         }
-        .result-area {
-            margin-top: 24px;
-            background: #e9f5ff;
-            border-radius: 8px;
-            padding: 14px 12px;
-            font-size: 1rem;
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #f7f9fc;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .result-table th {
+            background: #0077b6;
+            color: #fff;
+        }
+        .result-table tr:nth-child(odd) {
+            background: #eaf5fc;
+        }
+        .result-table tr:nth-child(even) {
+            background: #f7f9fc;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #ff6f61;
+        }
+        .star-icon {
+            color: #ffb400;
+            font-size: 1.2rem;
+            margin-left: 6px;
+        }
+        .tooltip {
+            display: none;
+            position: absolute;
+            background: #f7f9fc;
             color: #333;
-            word-break: break-all;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            z-index: 1000;
+            max-width: 300px;
+            word-wrap: break-word;
+            transform: translate(-50%, -110%);
+        }
+        .tooltip.visible {
+            display: block;
         }
     </style>
     <script>
@@ -86,20 +120,19 @@
             let weightsHtml = "";
             if (drones.length > 0) {
                 for (let key in drones[0]) {
-                    if (key !== "name"&& key !== "compliance") {
+                    if (key !== "name" && key !== "compliance") {
                         starRatings[key] = 3; // 默认3星
                         weightsHtml += `
-                        <div class="weight-row">
-                            <label>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</label>
-                            <div class="stars" data-key="${key}">
-                                ${[5,4,3,2,1].map(i => `<span class="star" data-value="${i}" onclick="setStar('${key}',${i})">&#9733;</span>`).join('')}
-                            </div>
-                        </div>`;
+                                   <div class="weight-row">
+                                       <label>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</label>
+                                       <div class="stars" data-key="${key}">
+                                           ${[5,4,3,2,1].map(i => `<span class="star" data-value="${i}" onclick="setStar('${key}',${i})">&#9733;</span>`).join('')}
+                                       </div>
+                                   </div>`;
                     }
                 }
             }
             document.getElementById("weights").innerHTML = weightsHtml;
-            // 初始化星级显示
             for (let key in starRatings) setStar(key, starRatings[key]);
         };
 
@@ -123,22 +156,62 @@
             })
             .then(response => response.json())
             .then(data => {
-                let weightsHtml = "<strong>归一化权重：</strong><br><pre>" + JSON.stringify(data.weights, null, 2) + "</pre>";
-                let resultHtml = `<strong>Ranking Result:</strong><br><pre>${JSON.stringify(data.ahp, null, 2)}</pre>`;
-                document.getElementById("result").innerHTML = weightsHtml + resultHtml;
+                const ahpResults = data.ahp;
+                const resultDiv = document.getElementById("result");
+                if (ahpResults && ahpResults.length > 0) {
+                    let tableHtml = `
+                        <table class="result-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Drone ID</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                    ahpResults.forEach((item, index) => {
+                        const isTopThree = index < 3 ? `<span class="star-icon">&#9733;</span>` : '';
+                        tableHtml += `
+                            <tr onmouseover="showTooltip(event, ${index})" onmouseout="hideTooltip()">
+                                <td class="${index < 3 ? 'highlight' : ''}">${index + 1}${isTopThree}</td>
+                                <td>${item.name}</td>
+                                <td>${item.score.toFixed(2)}</td>
+                            </tr>`;
+                    });
+                    tableHtml += `</tbody></table>`;
+                    resultDiv.innerHTML = `<strong>Ranking Result:</strong>${tableHtml}`;
+                } else {
+                    resultDiv.innerHTML = '<p>No ranking results available.</p>';
+                }
             });
+        }
+
+        function showTooltip(event, index) {
+            const tooltip = document.getElementById("tooltip");
+            const drone = drones[index];
+            tooltip.innerHTML = Object.keys(drone)
+                .map(key => `<strong>${key.replace(/_/g, ' ').toUpperCase()}:</strong> ${drone[key]}`)
+                .join('<br>');
+            tooltip.style.left = event.pageX + 'px';
+            tooltip.style.top = event.pageY - 20 + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById("tooltip");
+            tooltip.classList.remove('visible');
         }
     </script>
 </head>
 <body>
     <div class="container">
         <h2>参数重要性打星</h2>
-        <div class="tip">请为每个特征打1~5星，星数越多表示越重要。</div>
         <form onsubmit="event.preventDefault();submitWeights();">
             <div id="weights"></div>
             <button type="submit" class="btn-submit">提交权重</button>
         </form>
-        <div id="result" class="result-area"></div>
+        <div id="result"></div>
+        <div id="tooltip" class="tooltip"></div>
     </div>
 </body>
 </html>
