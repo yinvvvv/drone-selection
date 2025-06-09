@@ -47,6 +47,58 @@
         .star.selected {
             color: #ffb400;
         }
+        .method-selection {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            border: 1px solid #e1ecf4;
+        }
+        .method-selection h3 {
+            margin: 0 0 12px 0;
+            color: #0077b6;
+            font-size: 1.1rem;
+        }
+        .method-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .method-option {
+            flex: 1;
+            min-width: 120px;
+        }
+        .method-option input[type="radio"] {
+            display: none;
+        }
+        .method-option label {
+            display: block;
+            padding: 10px 12px;
+            background: #fff;
+            border: 2px solid #e1ecf4;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .method-option input[type="radio"]:checked + label {
+            background: #0077b6;
+            color: #fff;
+            border-color: #0077b6;
+        }
+        .method-option label:hover {
+            border-color: #0077b6;
+        }
+        .method-description {
+            margin-top: 12px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #555;
+            min-height: 40px;
+        }
         .btn-submit {
             width: 100%;
             background: #0077b6;
@@ -61,6 +113,37 @@
         }
         .btn-submit:hover {
             background: #023e8a;
+        }
+        /* result comparisom */
+        .results-container{
+            margin-top: 24px;
+        }
+        .comparison-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 8px 12px;
+            background: #f0f8ff;
+            border: 1px solid #e1ecf4;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background: #0077b6;
+            color: #fff;
+            border-color: #0077b6;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
         .result-table {
             width: 100%;
@@ -115,6 +198,12 @@
     <script>
         let drones = [];
         let starRatings = {};
+
+        const methodDescriptions = {
+            'ahp': 'AHP (层次分析法): 使用Min-Max标准化，简单直观的加权求和方法',
+            'topsis': 'TOPSIS (理想解法): 同时考虑最优和最劣方案，通过距离计算相对接近度',
+            //'wsm': 'WSM (加权求和法): 最简单的线性加权求和，易于理解和计算'
+        }
         window.onload = function() {
             drones = JSON.parse(localStorage.getItem('filteredDrones') || '[]');
             let weightsHtml = "";
@@ -134,7 +223,13 @@
             }
             document.getElementById("weights").innerHTML = weightsHtml;
             for (let key in starRatings) setStar(key, starRatings[key]);
+
+            //set ahp to default selected method
+            document.getElementById("ahp").checked = true;
+            updateMethodDescription();
         };
+
+        
 
         function setStar(key, value) {
             starRatings[key] = value;
@@ -148,43 +243,64 @@
             });
         }
 
+        function updateMethodDescription() {
+            const selectedMethod = document.querySelector('input[name="method"]:checked').value;
+            document.getElementById('method-desc').textContent = methodDescriptions[selectedMethod];
+        }
+
         function submitWeights() {
+            const selectedMethod = document.querySelector('input[name="method"]:checked').value;
+            
             fetch('/rank', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({drones, stars: starRatings})
+                body: JSON.stringify({
+                    drones, 
+                    stars: starRatings,
+                    method: selectedMethod
+                })
             })
             .then(response => response.json())
             .then(data => {
-                const ahpResults = data.ahp;
-                const resultDiv = document.getElementById("result");
-                if (ahpResults && ahpResults.length > 0) {
-                    let tableHtml = `
-                        <table class="result-table">
-                            <thead>
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Drone ID</th>
-                                    <th>Score</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-                    ahpResults.forEach((item, index) => {
-                        const isTopThree = index < 3 ? `<span class="star-icon">&#9733;</span>` : '';
-                        tableHtml += `
-                            <tr onmouseover="showTooltip(event, ${index})" onmouseout="hideTooltip()">
-                                <td class="${index < 3 ? 'highlight' : ''}">${index + 1}${isTopThree}</td>
-                                <td>${item.name}</td>
-                                <td>${item.score.toFixed(2)}</td>
-                            </tr>`;
-                    });
-                    tableHtml += `</tbody></table>`;
-                    resultDiv.innerHTML = `<strong>Ranking Result:</strong>${tableHtml}`;
+                if (data.success){
+                    displaySingleResult(data.result,data.method);
                 } else {
-                    resultDiv.innerHTML = '<p>No ranking results available.</p>';
+                    alert("Failed to calculate, please retry later:"+data.error);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while calculating scores. Please try again later.");
             });
         }
+        
+        function displaySingleResult(result, method){
+            let tableHtml = `
+            <h3>${method.toUpperCase()} 方法评分结果</h3>
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>无人机ID</th>
+                        <th>评分</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+        result.forEach((item, idx) => {
+            const isTopThree = idx < 3 ? `<span class="star-icon">&#9733;</span>` : '';
+            tableHtml += `
+                <tr onmouseover="showTooltip(event, ${idx})" onmouseout="hideTooltip()">
+                    <td class="${idx < 3 ? 'highlight' : ''}">${idx + 1}${isTopThree}</td>
+                    <td>${item.name}</td>
+                    <td>${item.score.toFixed(4)}</td>
+                </tr>`;
+        });
+
+        tableHtml += `</tbody></table>`;
+        
+        document.getElementById("results-container").innerHTML = tableHtml;
+        document.getElementById("results-container").style.display = "block";
+    }
 
         function showTooltip(event, index) {
             const tooltip = document.getElementById("tooltip");
@@ -206,11 +322,37 @@
 <body>
     <div class="container">
         <h2>参数重要性打星</h2>
+        
+        <!-- 方法选择区域 -->
+        <div class="method-selection">
+            <h3>选择评分方法:</h3>
+            <div class="method-options">
+                <div class="method-option">
+                    <input type="radio" id="ahp" name="method" value="ahp" onchange="updateMethodDescription()">
+                    <label for="ahp">AHP</label>
+                </div>
+                <div class="method-option">
+                    <input type="radio" id="topsis" name="method" value="topsis" onchange="updateMethodDescription()">
+                    <label for="topsis">TOPSIS</label>
+                </div>
+                <!--
+                <div class="method-option">
+                    <input type="radio" id="wsm" name="method" value="wsm" onchange="updateMethodDescription()">
+                    <label for="wsm">WSM</label>
+                </div>
+                -->
+            </div>
+            <div class="method-description" id="method-desc"></div>
+        </div>
+        
         <form onsubmit="event.preventDefault();submitWeights();">
             <div id="weights"></div>
-            <button type="submit" class="btn-submit">提交权重</button>
+            <button type="submit" class="btn-submit">计算评分</button>
         </form>
-        <div id="result"></div>
+        
+        <!-- 结果显示区域 -->
+        <div id="results-container" class="results-container" style="display: none;"></div>
+        
         <div id="tooltip" class="tooltip"></div>
     </div>
 </body>

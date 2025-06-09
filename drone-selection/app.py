@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from db_utils import get_drones
 from decision.filiter import filter_drones
 from decision.ahp import calculate_ahp
+from decision.topsis import calculate_topsis
 from decision.feature_quantification import quantify_features
 import os
 app = Flask(__name__)
@@ -25,14 +26,36 @@ def select():
 def rank():
     data = request.json
     drones = data["drones"]
+    selected_method = data.get("method", "ahp")
     if "stars" in data:
         stars = data["stars"]
         total = sum(stars.values())
         weights = {k: (v / total if total > 0 else 0) for k, v in stars.items()}
     else:
         weights = data["weights"]
-    ahp_result = calculate_ahp(weights, quantify_features(drones))
-    return jsonify({"success": True, "ahp": ahp_result, "weights": weights})
+    quantified_drones = quantify_features(drones)
 
+    try:
+        if selected_method == "topsis":
+            result = calculate_topsis(weights,quantified_drones)
+        elif selected_method == "ahp":
+            result = calculate_ahp(weights, quantified_drones)
+        else:
+            return jsonify({
+                "success": False, 
+                "error": "Invalid method selected"
+            }), 400
+        
+        return jsonify({
+            "success": True, 
+            "result": result,
+            "method": selected_method,
+            "weights": weights
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False, 
+            "error": str(e)
+        }), 500
 if __name__ == '__main__':
     app.run(debug=True)
