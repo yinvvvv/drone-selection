@@ -276,13 +276,13 @@
         
         function displaySingleResult(result, method){
             let tableHtml = `
-            <h3>${method.toUpperCase()} 方法评分结果</h3>
+            <h3>${method.toUpperCase()} Result_table</h3>
             <table class="result-table">
                 <thead>
                     <tr>
-                        <th>排名</th>
-                        <th>无人机ID</th>
-                        <th>评分</th>
+                        <th>Rank</th>
+                        <th>Drone ID</th>
+                        <th>Score</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -321,11 +321,11 @@
 </head>
 <body>
     <div class="container">
-        <h2>参数重要性打星</h2>
+        <h2>Star parameter importance</h2>
         
         <!-- 方法选择区域 -->
         <div class="method-selection">
-            <h3>选择评分方法:</h3>
+            <h3>Choose evaluation method:</h3>
             <div class="method-options">
                 <div class="method-option">
                     <input type="radio" id="ahp" name="method" value="ahp" onchange="updateMethodDescription()">
@@ -347,7 +347,7 @@
         
         <form onsubmit="event.preventDefault();submitWeights();">
             <div id="weights"></div>
-            <button type="submit" class="btn-submit">计算评分</button>
+            <button type="submit" class="btn-submit">Submit weights</button>
         </form>
         
         <!-- 结果显示区域 -->
