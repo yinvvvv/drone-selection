@@ -3,6 +3,7 @@ from db_utils import get_drones
 from decision.filiter import filter_drones
 from decision.ahp import calculate_ahp
 from decision.topsis import calculate_topsis
+from decision.wsm import calculate_wsm
 from decision.feature_quantification import quantify_features
 import os
 
@@ -46,6 +47,8 @@ def rank():
             result = calculate_topsis(weights, quantified_drones)
         elif selected_method == "ahp":
             result = calculate_ahp(weights, quantified_drones)
+        elif selected_method == "wsm":
+            result = calculate_wsm(weights, quantified_drones)
         else:
             return jsonify({
                 "success": False,

@@ -235,7 +235,7 @@
         const methodDescriptions = {
             'ahp': 'The AHP ranking results place greater emphasis on weight allocation and subjective judgment, resulting in better overall balance.',
             'topsis': 'The TOPSIS ranking results place greater emphasis on closeness to the "optimal" solution, making them more susceptible to the influence of extreme values in the indicators.',
-            //'wsm': 'WSM (加权求和法): 最简单的线性加权求和，易于理解和计算'
+            'wsm': 'WSM (Weighted Sum Model): The simplest linear weighted sum method, easy to understand and calculate, directly combines normalized values with weights.'
         }
         window.onload = function () {
             drones = JSON.parse(localStorage.getItem('filteredDrones') || '[]');
@@ -367,12 +367,12 @@
                 <input type="radio" id="topsis" name="method" value="topsis" onchange="updateMethodDescription()">
                 <label for="topsis">TOPSIS</label>
             </div>
-            <!--
+        
             <div class="method-option">
                 <input type="radio" id="wsm" name="method" value="wsm" onchange="updateMethodDescription()">
                 <label for="wsm">WSM</label>
             </div>
-            -->
+            
         </div>
         <div class="method-description" id="method-desc"></div>
     </div>
