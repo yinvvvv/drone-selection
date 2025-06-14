@@ -235,7 +235,11 @@
         const methodDescriptions = {
             'ahp': 'The AHP ranking results place greater emphasis on weight allocation and subjective judgment, resulting in better overall balance.',
             'topsis': 'The TOPSIS ranking results place greater emphasis on closeness to the "optimal" solution, making them more susceptible to the influence of extreme values in the indicators.',
+
+          
+
             'wsm': 'WSM (Weighted Sum Model): The simplest linear weighted sum method, easy to understand and calculate, directly combines normalized values with weights.'
+
         }
         window.onload = function () {
             drones = JSON.parse(localStorage.getItem('filteredDrones') || '[]');
